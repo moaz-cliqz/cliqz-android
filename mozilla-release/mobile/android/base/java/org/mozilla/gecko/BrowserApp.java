@@ -892,6 +892,7 @@ public class BrowserApp extends GeckoApp
             "Search:Idle",
             "Privacy:Info",
             "Addons:PreventGhosteryCliqz",
+            "Privacy:GetBondDashboardData",
             /* Cliqz end */
             null);
 
@@ -1765,6 +1766,7 @@ public class BrowserApp extends GeckoApp
             "Privacy:Info",
             "Search:Idle",
             "Addons:PreventGhosteryCliqz",
+            "Privacy:GetBondDashboardData",
             /* Cliqz end */
             null);
 
@@ -2396,8 +2398,10 @@ public class BrowserApp extends GeckoApp
                         .setPositiveButton(getString(R.string.action_ok),null)
                         .show();
                 break;
-            /* Cliqz end */
-
+            case "Privacy:GetBondDashboardData":
+                mControlCenterPagerAdapter.setTrackingData(message);
+                break;
+                /* Cliqz end */
             default:
                 super.handleMessage(event, message, callback);
                 break;
@@ -4619,10 +4623,14 @@ public class BrowserApp extends GeckoApp
             mControlCenterContainer.setVisibility(View.GONE);
             mDynamicToolbar.setPinned(false, PinReason.DISABLED);
         } else {
-            mControlCenterPagerAdapter.setTrackingData(new GeckoBundle());
+            if(BuildConfig.FLAVOR_skin.equals("bond")) {
+                EventDispatcher.getInstance().dispatch("Privacy:GetBondDashboardData",null);
+            } else {
+                mControlCenterPagerAdapter.setTrackingData(new GeckoBundle());
+                EventDispatcher.getInstance().dispatch("Privacy:GetInfo",null);
+            }
             mControlCenterContainer.setVisibility(View.VISIBLE);
             mControlCenterPager.setCurrentItem(0);
-            EventDispatcher.getInstance().dispatch("Privacy:GetInfo",null);
             mDynamicToolbar.setPinned(true, PinReason.DISABLED);
             ControlCenterMetrics.show();
         }

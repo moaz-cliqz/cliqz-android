@@ -6437,7 +6437,8 @@ var Cliqz = {
       "Privacy:Hide",
       "Privacy:SetInfo",
       "Privacy:Show",
-      "Privacy:SetBlockingPolicy"
+      "Privacy:SetBlockingPolicy",
+      "Privacy:GetBondDashboardData",
     ]);
 
     ChromeUtils.import("resource://gre/modules/ExtensionUtils.jsm");
@@ -6662,6 +6663,11 @@ var Cliqz = {
       case "ready":
         // it will be considered ready when any message is sent from extension
         break;
+      case "dashboardData":
+        GlobalEventDispatcher.sendRequest({
+          type: "Privacy:GetBondDashboardData",
+          data: msg.payload
+        });
       default:
         console.log("unexpected message", msg);
     }
@@ -6831,6 +6837,10 @@ var Cliqz = {
           name: 'SET_BLOCKING_POLICY',
           message: blockingPolicy
         });
+        break;
+      case "Privacy:GetBondDashboardData":
+        this.messagePrivacyExtension({ name: "getAndroidDashboardStats" }});
+        break;
     }
   }
 };
