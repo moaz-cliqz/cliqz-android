@@ -12,6 +12,6 @@ public class LoginHelper {
     public LoginHelper(Context context){
     }
 
-    public void loginOrRegister(){
+    public void start(){
     }
 }
