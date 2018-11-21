@@ -12,4 +12,8 @@ public class LoginHelper {
 
     public void  start() {
     }
+
+    public boolean backPressed() {
+        return false;
+    }
 }

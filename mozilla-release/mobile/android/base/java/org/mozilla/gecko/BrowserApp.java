@@ -315,6 +315,7 @@ public class BrowserApp extends GeckoApp
     private TextView mStateButtonBondDashboard;
     private TextView mVpnButtonBondDashboard;
     private TextView mClearButtonBondDashboard;
+    public LoginHelper mLoginHelper;
     /* Cliqz End */
 
     public static final String TAB_HISTORY_FRAGMENT_TAG = "tabHistoryFragment";
@@ -681,8 +682,13 @@ public class BrowserApp extends GeckoApp
 
     @Override
     public boolean onKeyUp(int keyCode, KeyEvent event) {
-        if (!Versions.preN &&
-                keyCode == KeyEvent.KEYCODE_BACK) {
+        if (!Versions.preN && keyCode == KeyEvent.KEYCODE_BACK) {
+            /* Cliqz start */
+            if(mLoginHelper != null && mLoginHelper.backPressed()) {
+                    return true;
+                }
+            }
+            /* Cliqz end */
             ThreadUtils.getUiHandler().removeCallbacks(mCheckLongPress);
         }
 
@@ -1035,8 +1041,8 @@ public class BrowserApp extends GeckoApp
             }
         }, 4000);
         if (BuildConfig.FLAVOR_skin.equals("bond")) {
-            final LoginHelper loginHelper = new LoginHelper(this);
-            loginHelper.start();
+            mLoginHelper = new LoginHelper(this);
+            mLoginHelper.start();
         }
         /*Cliqz End*/
     }
