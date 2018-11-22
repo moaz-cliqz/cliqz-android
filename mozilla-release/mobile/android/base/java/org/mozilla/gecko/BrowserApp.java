@@ -889,6 +889,7 @@ public class BrowserApp extends GeckoApp
             "Search:Idle",
             "Privacy:Info",
             "Addons:PreventGhosteryCliqz",
+            "Privacy:DashboardData",
             /* Cliqz end */
             null);
 
@@ -1759,6 +1760,7 @@ public class BrowserApp extends GeckoApp
             "Privacy:Info",
             "Search:Idle",
             "Addons:PreventGhosteryCliqz",
+            "Privacy:DashboardData",
             /* Cliqz end */
             null);
 
@@ -2385,8 +2387,10 @@ public class BrowserApp extends GeckoApp
                         .setPositiveButton(getString(R.string.action_ok),null)
                         .show();
                 break;
-            /* Cliqz end */
-
+            case "Privacy:DashboardData":
+                //here we have the data
+                Log.d(LOGTAG, message.toString());
+                /* Cliqz end */
             default:
                 super.handleMessage(event, message, callback);
                 break;
@@ -4596,7 +4600,14 @@ public class BrowserApp extends GeckoApp
             mControlCenterPagerAdapter.setTrackingData(new GeckoBundle());
             mControlCenterContainer.setVisibility(View.VISIBLE);
             mControlCenterPager.setCurrentItem(0);
-            EventDispatcher.getInstance().dispatch("Privacy:GetInfo",null);
+            //TODO: Move the event dispatches inside the respective control centers
+            if (BuildConfig.FLAVOR_skin.equals("bond")) {
+                final GeckoBundle geckoBundle = new GeckoBundle();
+                geckoBundle.putString("interval", "day");
+                EventDispatcher.getInstance().dispatch("Privacy:GetInsightsData", geckoBundle);
+            } else {
+                EventDispatcher.getInstance().dispatch("Privacy:GetInfo", null);
+            }
             mDynamicToolbar.setPinned(true, PinReason.DISABLED);
             ControlCenterMetrics.show();
         }
