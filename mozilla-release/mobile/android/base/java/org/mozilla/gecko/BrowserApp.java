@@ -685,8 +685,7 @@ public class BrowserApp extends GeckoApp
         if (!Versions.preN && keyCode == KeyEvent.KEYCODE_BACK) {
             /* Cliqz start */
             if(mLoginHelper != null && mLoginHelper.backPressed()) {
-                    return true;
-                }
+                return true;
             }
             /* Cliqz end */
             ThreadUtils.getUiHandler().removeCallbacks(mCheckLongPress);
@@ -2396,6 +2395,7 @@ public class BrowserApp extends GeckoApp
             case "Privacy:DashboardData":
                 //here we have the data
                 Log.d(LOGTAG, message.toString());
+                break;
                 /* Cliqz end */
             default:
                 super.handleMessage(event, message, callback);
