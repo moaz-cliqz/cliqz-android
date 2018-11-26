@@ -329,7 +329,7 @@
 <!ENTITY login_continue_button "CONTINUE">
 <!ENTITY login_footer "here a footer text in \n(2 lines)">
 <!ENTITY error_invalid_email "The email you entered is not valid">
-<!ENTITY resend_activation_code "RESEND ACTIVATION LINK">
+<!ENTITY login_resend_activation_link "RESEND ACTIVATION LINK">
 <!ENTITY login_promotion_code_hint "Enter Promotion Code">
 <!ENTITY login_activation_title "ALOMOST READY...">
 <!ENTITY login_activation_description
@@ -338,5 +338,10 @@
 <!ENTITY login_welcome_description
     "Your free 2-weeks trial starts now!\nUpgrade your account anytime in the settings.">
 <!ENTITY browserName "&brandFullName;">
-<!ENTITY error_no_internet_connection "No Internet Connection">
+<!ENTITY error_server_not_reached
+    "We can't reach the server, Please check your internet connection">
 <!ENTITY error_resend_activation "Can't resend the activation link">
+<!ENTITY open_mail_app "Open Mail App">
+<!ENTITY login_resend_activation_dialog_title "Activation Link Resent">
+<!ENTITY login_resend_activation_dialog_description
+    "We sent you another activation link to your email. Please also check your spam folder.">

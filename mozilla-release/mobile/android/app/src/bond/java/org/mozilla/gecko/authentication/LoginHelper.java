@@ -2,6 +2,9 @@ package org.mozilla.gecko.authentication;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Handler;
@@ -9,12 +12,14 @@ import android.provider.Settings;
 import android.support.graphics.drawable.VectorDrawableCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewStub;
+import android.view.inputmethod.EditorInfo;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.google.protobuf.GeneratedMessageLite;
@@ -35,6 +40,7 @@ import java.util.TimerTask;
 
 import static android.view.View.GONE;
 import static android.view.View.VISIBLE;
+import static org.mozilla.gecko.InputMethods.getInputMethodManager;
 
 /**
  * Copyright © Cliqz 2018
@@ -67,11 +73,13 @@ public class LoginHelper implements View.OnClickListener, TalkToServer.ServerCal
         mActivity = activity;
         mSecretKey = Settings.Secure.getString(mActivity.getContentResolver(),
                 Settings.Secure.ANDROID_ID);
-        mPreferenceManager = PreferenceManager.getInstance(activity.getBaseContext());
+        mPreferenceManager =
+            PreferenceManager.getInstance(activity.getBaseContext());
     }
 
     public void start() {
         if (!autoLogin()) {
+            initViews();
             showLoginScreen();
         }
     }
@@ -93,73 +101,123 @@ public class LoginHelper implements View.OnClickListener, TalkToServer.ServerCal
                 case REGISTRATION:
                     mEmailId = mLoginInputField.getText().toString();
                     if (!Utils.validateEmail(mEmailId)) {
-                        mErrorMessageTextView.setText(mActivity.getString(R.string
-                                .error_invalid_email));
+                        mErrorMessageTextView
+                            .setText(mActivity
+                                    .getString(R.string.error_invalid_email));
                     } else {
+                        mErrorMessageTextView.setText("");
                         registerDevice();
                     }
                     break;
+                case ACTIVATION:
+                    openMailApp();
+                    break;
                 case WELCOME:
                     hideLoginScreen();
+                    break;
+                default:
+                    break;
             }
+            getInputMethodManager(mActivity)
+                .hideSoftInputFromWindow(mLoginInputField.getWindowToken(), 0);
         } else if (view.getId() == R.id.login_resend_button) {
+            mErrorMessageTextView.setText("");
+            showResendActivationLinkDialog();
             resendActivation();
         }
     }
 
+    private void openMailApp() {
+        try {
+            final Intent emailIntent = new Intent(Intent.ACTION_VIEW);
+            emailIntent.addCategory(Intent.CATEGORY_APP_EMAIL);
+            mActivity.startActivity(emailIntent);
+        } catch (Exception e) {
+            Log.e(LOGTAG, "no email app exist to be opened");
+        }
+    }
+
+    private void showResendActivationLinkDialog() {
+        new AlertDialog.Builder(mActivity)
+            .setTitle(mActivity.getString(R.string.login_resend_activation_dialog_title))
+            .setMessage(R.string.login_resend_activation_dialog_description)
+            .setPositiveButton(mActivity.getString(R.string.open_mail_app),
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        openMailApp();
+                    }
+                })
+            .setNegativeButton(mActivity.getString(R.string.default_browser_dialog_cancel),
+                new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        dialog.dismiss();
+                    }
+                }).show();
+    }
+
     @Override
-    public void onServerReplied(GeneratedMessageLite serverResponse, TalkToServer.Cases whichCase) {
+    public void onServerReplied(GeneratedMessageLite serverResponse,
+                                TalkToServer.Cases whichCase) {
         switch (whichCase) {
             case IS_DEVICE_ACTIVATED:
-                if (((IsDeviceActivatedResponse)serverResponse).getErrorCount() > 0) {
-                    if (((IsDeviceActivatedResponse)serverResponse).getErrorList().get(0).getCode() == ErrorCode.NO_INTERNET_CONNECTION) {
+                final IsDeviceActivatedResponse activatedRes =
+                    (IsDeviceActivatedResponse) serverResponse;
+                if (activatedRes.getErrorCount() > 0) {
+                    if (activatedRes.getErrorList().get(0).getCode() ==
+                            ErrorCode.SERVER_NOT_REACHED) {
+                        initViews();
                         showLoginScreen();
-                        mLoginInputField.setText(mEmailId);
-                        mErrorMessageTextView.setText(mActivity.getString(R.string.error_no_internet_connection));
+                        mErrorMessageTextView
+                            .setText(mActivity.getString(R.string.error_server_not_reached));
                     } else {
                         Log.e(LOGTAG, "Device not activated yet");
                         initViews();
                         showActivationScreen();
                     }
-                } else {
-                    saveEmailId();
                     getVpnCreds(mPreferenceManager.getEmailId());
                 }
                 break;
             case REGISTER_DEVICE:
-                if (((Response)serverResponse).getErrorCount() > 0) {
+                final Response registerRes = (Response) serverResponse;
+                if (registerRes.getErrorCount() > 0) {
                     Log.e(LOGTAG, "Error registering device.");
-                    final Error error = ((Response)serverResponse).getErrorList().get(0);
+                    final Error error = registerRes.getErrorList().get(0);
+                    Log.e(LOGTAG, error.getMsg());
+
                     if (error.getCode() == ErrorCode.DEVICE_EXISTS) {
                         showActivationScreen();
-                    } else if (error.getCode() == ErrorCode.NO_INTERNET_CONNECTION) {
-                        mErrorMessageTextView.setText(mActivity.getString(R.string
-                                .error_no_internet_connection));
+                    } else if (error.getCode() == ErrorCode.SERVER_NOT_REACHED) {
+                        mErrorMessageTextView
+                            .setText(mActivity.getString(R.string.error_server_not_reached));
                     }
                 } else {
-                    saveEmailId();
                     showActivationScreen();
                 }
                 break;
             case RESEND_ACTIVATION:
-                if (((Response)serverResponse).getErrorCount() > 0) {
+                final Response resendRes = (Response) serverResponse;
+                if (resendRes.getErrorCount() > 0) {
                     Log.e(LOGTAG, "can't resend the activation again");
-                    if (((Response)serverResponse).getErrorList().get(0).getCode() == ErrorCode
-                            .NO_INTERNET_CONNECTION) {
-                        mErrorMessageTextView.setText(mActivity.getString(R.string
-                                .error_no_internet_connection));
+                    if (resendRes.getErrorList().get(0).getCode() ==
+                            ErrorCode .SERVER_NOT_REACHED) {
+                        mErrorMessageTextView
+                            .setText(mActivity.getString(R.string .error_server_not_reached));
                     } else {
-                        mErrorMessageTextView.setText(mActivity.getString(R.string
-                                .error_resend_activation));
+                        mErrorMessageTextView
+                            .setText(mActivity.getString(R.string .error_resend_activation));
                     }
                 }
                 break;
             case WAIT_FOR_ACTIVATION:
-                if (((IsDeviceActivatedResponse)serverResponse).getErrorCount() > 0) {
+                final IsDeviceActivatedResponse waitActivationRes =
+                        (IsDeviceActivatedResponse) serverResponse;
+                if (waitActivationRes.getErrorCount() > 0) {
                     Log.e(LOGTAG, "device is still not active");
                 } else {
                     mTimer.cancel();
-                    saveEmailId();
+                    mPreferenceManager.setEmailId(mEmailId);
                     showWelcomeScreen();
                     getVpnCreds(mPreferenceManager.getEmailId());
                 }
@@ -176,17 +234,18 @@ public class LoginHelper implements View.OnClickListener, TalkToServer.ServerCal
     }
 
     private void checkDeviceActivated() {
-        new TalkToServer(this, TalkToServer.Cases.IS_DEVICE_ACTIVATED, mEmailId, mSecretKey).execute();
+        new TalkToServer(this, TalkToServer.Cases.IS_DEVICE_ACTIVATED,
+                         mEmailId, mSecretKey).execute();
     }
 
     private void registerDevice() {
-        new TalkToServer(this, TalkToServer.Cases.REGISTER_DEVICE, mEmailId, mSecretKey).execute();
+        new TalkToServer(this, TalkToServer.Cases.REGISTER_DEVICE,
+                         mEmailId, mSecretKey).execute();
     }
 
     private void resendActivation() {
-        new TalkToServer(LoginHelper.this,
-                TalkToServer.Cases.RESEND_ACTIVATION, mEmailId, mSecretKey)
-                .execute();
+        new TalkToServer(LoginHelper.this, TalkToServer.Cases.RESEND_ACTIVATION,
+                mEmailId, mSecretKey) .execute();
 	}
 
     private void getVpnCreds(String emailId) {
@@ -202,8 +261,8 @@ public class LoginHelper implements View.OnClickListener, TalkToServer.ServerCal
                 handler.post(new Runnable() {
                     public void run() {
                         new TalkToServer(LoginHelper.this,
-                                TalkToServer.Cases.WAIT_FOR_ACTIVATION, mEmailId, mSecretKey)
-                                .execute();
+                                TalkToServer.Cases.WAIT_FOR_ACTIVATION,
+                                mEmailId, mSecretKey).execute();
                     }
                 });
             }
@@ -215,12 +274,21 @@ public class LoginHelper implements View.OnClickListener, TalkToServer.ServerCal
     private void initViews() {
         mLoginScreenStub = mActivity.findViewById(R.id.bond_login_screen_stub);
         mLoginScreenStub.setLayoutResource(R.layout.bond_login_screen);
-        final LinearLayout loginScreenView = (LinearLayout) mLoginScreenStub.inflate();
+        final ScrollView loginScreenView = (ScrollView) mLoginScreenStub.inflate();
         mLoginIcon = (ImageView) loginScreenView.findViewById(R.id.login_icon);
         mLoginTitle = (TextView) loginScreenView.findViewById(R.id.login_title);
         mLoginDescription = (TextView) loginScreenView.findViewById(R.id.login_description);
         mErrorMessageTextView = (TextView) loginScreenView.findViewById(R.id.login_error_message);
         mLoginInputField = loginScreenView.findViewById(R.id.login_input_field);
+        mLoginInputField.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+            @Override
+            public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+                if (actionId == EditorInfo.IME_ACTION_DONE) {
+                    mContinueButton.performClick();
+                }
+                return true;
+            }
+        });
         mContinueButton = loginScreenView.findViewById(R.id.login_continue_button);
         mContinueButton.setOnClickListener(this);
         mResendButton = loginScreenView.findViewById(R.id.login_resend_button);
@@ -228,11 +296,14 @@ public class LoginHelper implements View.OnClickListener, TalkToServer.ServerCal
         mFooterTextView = (TextView) loginScreenView.findViewById(R.id.login_footer_text);
     }
 
-    private void setViewsValues(LoginStatus loginState, int iconId, int titleId, int descriptionId,
-                                int inputFieldHintId, int inputFieldVisibility, int resendVisibility
-            , int footerTextId, int footerTextVisibility) {
+    private void setViewsValues(LoginStatus loginState, int iconId,
+                                int titleId, int descriptionId,
+                                int inputFieldHintId, int inputFieldVisibility,
+                                int resendVisibility, int continueButtonTextId,
+                                int footerTextId, int footerTextVisibility) {
         mLoginState = loginState;
-        final Drawable drawable = VectorDrawableCompat.create(mActivity.getResources(), iconId, null);
+        final Drawable drawable = VectorDrawableCompat
+            .create(mActivity.getResources(), iconId, null);
         mLoginIcon.setImageDrawable(drawable);
         mLoginTitle.setText(mActivity.getString(titleId));
         mLoginDescription.setText(mActivity.getString(descriptionId));
@@ -240,35 +311,45 @@ public class LoginHelper implements View.OnClickListener, TalkToServer.ServerCal
         if (inputFieldVisibility == VISIBLE) {
             mLoginInputField.setHint(mActivity.getString(inputFieldHintId));
         }
+        mContinueButton.setText(mActivity.getString(continueButtonTextId));
         mResendButton.setVisibility(resendVisibility);
+
         mFooterTextView.setVisibility(footerTextVisibility);
     }
 
     private void showLoginScreen() {
-        initViews();
-        setViewsValues(LoginStatus.REGISTRATION, R.mipmap.lumen_logo, R.string.browserName, R.string
-                .login_description, R.string.login_input_hint, VISIBLE, GONE, R.string
-                .login_footer, VISIBLE);
+        setViewsValues(LoginStatus.REGISTRATION, R.mipmap.lumen_logo,
+                       R.string.browserName, R.string.login_description,
+                       R.string.login_input_hint, VISIBLE, GONE,
+                       R.string.login_continue_button, R.string.login_footer,
+                       VISIBLE);
     }
 
     private void showActivationScreen() {
-        setViewsValues(LoginStatus.ACTIVATION, R.drawable.login_circle, R.string
-                        .login_activation_title, R.string.login_activation_description, -1, GONE, VISIBLE,
-                -1, GONE);
+        setViewsValues(LoginStatus.ACTIVATION, R.drawable.login_circle,
+                       R.string.login_activation_title,
+                       R.string.login_activation_description, -1, GONE,
+                       VISIBLE, R.string.open_mail_app, -1, GONE);
         pollServerForActivation();
     }
 
     private void showWelcomeScreen() {
-        setViewsValues(LoginStatus.WELCOME, R.drawable.login_welcome, R.string.login_welcome_title,
-                R.string.login_welcome_description, -1, GONE, GONE, -1, GONE);
+        setViewsValues(LoginStatus.WELCOME, R.drawable.login_welcome,
+                       R.string.login_welcome_title,
+                       R.string.login_welcome_description, -1, GONE, GONE,
+                       R.string.login_continue_button, -1, GONE);
     }
 
     private void hideLoginScreen() {
         mLoginScreenStub.setVisibility(View.GONE);
     }
 
-    private void saveEmailId() {
-        mPreferenceManager.setEmailId(mEmailId);
+    public boolean backPressed() {
+        if (mLoginState == LoginStatus.ACTIVATION) {
+            showLoginScreen();
+            return true;
+        }
+        return false;
     }
 
     private void importVpnProfiles() {

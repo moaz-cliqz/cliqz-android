@@ -37,7 +37,7 @@ enum ErrorCode {
   NOT_SUBSCRIBED = 10;
   DEVICE_EXISTS = 11;
   DEVICE_ACTIVATED = 12;
-  NO_INTERNET_CONNECTION = 13;
+  SERVER_NOT_REACHED = 13;
 }
 
 enum SubscriptionType {

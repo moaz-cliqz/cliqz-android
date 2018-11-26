@@ -7,6 +7,7 @@ import com.google.protobuf.GeneratedMessageLite;
 import org.mozilla.gecko.BondV1Grpc;
 import org.mozilla.gecko.Error;
 import org.mozilla.gecko.ErrorCode;
+import org.mozilla.gecko.IsDeviceActivatedResponse;
 import org.mozilla.gecko.RegisterDeviceRequest;
 import org.mozilla.gecko.Response;
 import org.mozilla.gecko.UserAuth;
@@ -18,6 +19,8 @@ import java.util.concurrent.TimeUnit;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
+import static org.mozilla.gecko.authentication.TalkToServer.Cases.REGISTER_DEVICE;
+
 /**
  * Copyright © Cliqz 2018
  */
@@ -27,8 +30,7 @@ public class TalkToServer extends AsyncTask<Void, Void, GeneratedMessageLite> {
         void onServerReplied(GeneratedMessageLite serverResponse, Cases whichCase);
     }
 
-    private static final String LOGTAG = TalkToServer.class.getSimpleName();
-    private static final String HOST = "ambassador.dev.k8s.eu-central-1.clyqz.com";
+    private static final String HOST = "api.lumenbrowser.com";
     private static final int PORT = 443;
     //different endpoints that can be called on the server
     public enum Cases {REGISTER_DEVICE, IS_DEVICE_ACTIVATED, WAIT_FOR_ACTIVATION,
@@ -71,7 +73,15 @@ public class TalkToServer extends AsyncTask<Void, Void, GeneratedMessageLite> {
             PrintWriter pw = new PrintWriter(sw);
             e.printStackTrace(pw);
             pw.flush();
-            return Response.newBuilder().addError(Error.newBuilder().setCode(ErrorCode.NO_INTERNET_CONNECTION)).build();
+            final GeneratedMessageLite.Builder responseBuilder;
+            if(mWhichCase == REGISTER_DEVICE) {
+                responseBuilder = IsDeviceActivatedResponse.newBuilder().addError(Error
+                        .newBuilder().setCode(ErrorCode.SERVER_NOT_REACHED));
+            } else {
+                responseBuilder = Response.newBuilder().addError(Error.newBuilder().setCode
+                        (ErrorCode.SERVER_NOT_REACHED));
+            }
+            return responseBuilder.build();
         }
     }
 
