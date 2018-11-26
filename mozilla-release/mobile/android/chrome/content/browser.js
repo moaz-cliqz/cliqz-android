@@ -6656,6 +6656,11 @@ var Cliqz = {
         // it will be considered ready when any message is sent from extension
         break;
       case "dashboardData":
+        //this is a bug from the extension, trackers array contains null elements, which breaks the
+        //event dispatching. Removed these two keys from the data, as we dont need it now.
+        //SHOULD BE FIXED ON THE EXTENSION SIDE
+        delete msg.payload.day.trackers
+        delete msg.payload.week.trackers
         GlobalEventDispatcher.sendRequest({
           type: "Privacy:DashboardData",
           data: msg.payload
