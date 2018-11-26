@@ -148,8 +148,7 @@ public class LoginHelper implements View.OnClickListener, TalkToServer.ServerCal
                     public void onClick(DialogInterface dialog, int which) {
                         dialog.dismiss();
                     }
-                });
-            .show();
+                }).show();
     }
 
     @Override
@@ -194,7 +193,7 @@ public class LoginHelper implements View.OnClickListener, TalkToServer.ServerCal
                 final Response resendRes = (Response) serverResponse;
                 if (resendRes.getErrorCount() > 0) {
                     Log.e(LOGTAG, "can't resend the activation again");
-                    if (resendRed.getErrorList().get(0).getCode() ==
+                    if (resendRes.getErrorList().get(0).getCode() ==
                             ErrorCode .SERVER_NOT_REACHED) {
                         mErrorMessageTextView
                             .setText(mActivity.getString(R.string .error_server_not_reached));
@@ -205,7 +204,9 @@ public class LoginHelper implements View.OnClickListener, TalkToServer.ServerCal
                 }
                 break;
             case WAIT_FOR_ACTIVATION:
-                if (((IsDeviceActivatedResponse) serverResponse).getErrorCount() > 0) {
+                final IsDeviceActivatedResponse waitActivationRes =
+                        (IsDeviceActivatedResponse) serverResponse;
+                if (waitActivationRes.getErrorCount() > 0) {
                     Log.e(LOGTAG, "device is still not active");
                 } else {
                     mTimer.cancel();
