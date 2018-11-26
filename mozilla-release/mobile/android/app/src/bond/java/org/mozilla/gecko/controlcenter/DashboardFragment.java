@@ -18,15 +18,25 @@ import org.mozilla.gecko.util.GeckoBundleUtils;
 import java.util.ArrayList;
 import java.util.List;
 
+import static org.mozilla.gecko.controlcenter.ControlCenterPagerAdapter.IS_TODAY;
+
 /**
  * Copyright © Cliqz 2018
  */
-public class DashboardTodayFragment extends ControlCenterFragment {
+public class DashboardFragment extends ControlCenterFragment {
 
     private RecyclerView mDashBoardListView;
     private TextView mDashboardStateTextView;
     private View mDisableDashboardView;
     private DashboardAdapter mDashboardAdapter;
+    private boolean mIsDailyView;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        final Bundle arguments = getArguments();
+        mIsDailyView = arguments.getBoolean(IS_TODAY);
+    }
 
     @Nullable
     @Override
@@ -76,7 +86,11 @@ public class DashboardTodayFragment extends ControlCenterFragment {
         if (mDashboardAdapter == null) {
             return;
         }
-        updateViews(GeckoBundleUtils.safeGetBundle(data, "data/day"));
+        if (mIsDailyView) {
+            updateViews(GeckoBundleUtils.safeGetBundle(data, "data/day"));
+        } else {
+            updateViews(GeckoBundleUtils.safeGetBundle(data, "data/week"));
+        }
     }
 
     @Override
@@ -98,7 +112,6 @@ public class DashboardTodayFragment extends ControlCenterFragment {
         }
     }
 
-    // @Todo should be removed
     public void updateViews(GeckoBundle data) {
         if (data == null) {
             return;
@@ -114,7 +127,7 @@ public class DashboardTodayFragment extends ControlCenterFragment {
                 R.drawable.ic_ad_blocking_shiel, "Ads Blocked", "That you can enjoy surfing without ads", -1));
         dashboardItems.add(new DashboardItemEntity(dataSaved.getValue(), dataSaved.getUnit(), -1,
                 "Data Saved", "more that enough to watch another video", -1));
-        //@TODO decide how to calculate battery savd
+        //@TODO decide how to calculate battery saved
         dashboardItems.add(new DashboardItemEntity("255", "MIN", R.drawable.ic_battery, "Battery Saved",
                 "so that you can enjoy your phone a little longer", -1));
         dashboardItems.add(new DashboardItemEntity("", "", R.drawable.ic_anti_phishing_hook, "Phishing protection",
