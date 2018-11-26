@@ -186,6 +186,7 @@
             </intent-filter>
         </activity-alias>
 
+
         <service
             android:name="org.mozilla.gecko.GeckoStarterService"
             android:exported="false"

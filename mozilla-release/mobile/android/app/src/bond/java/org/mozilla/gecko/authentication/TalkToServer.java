@@ -34,7 +34,7 @@ public class TalkToServer extends AsyncTask<Void, Void, GeneratedMessageLite> {
     private static final int PORT = 443;
     //different endpoints that can be called on the server
     public enum Cases {REGISTER_DEVICE, IS_DEVICE_ACTIVATED, WAIT_FOR_ACTIVATION,
-        RESEND_ACTIVATION};
+        RESEND_ACTIVATION, GET_VPN_CREDS};
     private ManagedChannel mChannel;
     private ServerCallbacks mServerCallbacks;
     private RegisterDeviceRequest mRegisterDeviceRequest;
@@ -63,6 +63,8 @@ public class TalkToServer extends AsyncTask<Void, Void, GeneratedMessageLite> {
                     return stub.isDeviceActivated(mRegisterDeviceRequest.getAuth());
                 case RESEND_ACTIVATION:
                     return stub.resendActivationEmail(mRegisterDeviceRequest.getAuth());
+                case GET_VPN_CREDS:
+                    return stub.getOVPNConfig(mRegisterDeviceRequest.getAuth());
                 default:
                     return stub.registerDevice(mRegisterDeviceRequest);
             }

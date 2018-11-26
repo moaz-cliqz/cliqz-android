@@ -252,6 +252,12 @@ android {
                 srcDir "${topsrcdir}/mobile/android/app/src/bond/res"
                 srcDir "${topsrcdir}/mobile/android/app/src/photon/res"
             }
+            assets {
+                srcDir "${topsrcdir}/mobile/build/ovpnassets"
+            }
+            jniLibs {
+                srcDir "${topsrcdir}/mobile/android/app/src/bond/jniLibs"
+            }
             proto {
                 srcDir "${topsrcdir}/mobile/android/app/src/bond/proto"
             }
@@ -290,7 +296,6 @@ dependencies {
     implementation "com.android.support:design:$support_library_version"
     implementation "com.android.support:customtabs:$support_library_version"
     implementation "com.android.support:palette-v7:$support_library_version"
-
     // We always include support for multidexing even when we don't enable it at runtime.
     // We could conditionally include support, but we'd need
     // to generate the `Application` class or fork the file on disk.
@@ -302,36 +307,29 @@ dependencies {
         implementation "com.google.android.gms:play-services-base:$google_play_services_version"
         implementation "com.google.android.gms:play-services-cast:$google_play_services_version"
     }
-
     if (mozconfig.substs.MOZ_INSTALL_TRACKING) {
         implementation "com.google.android.gms:play-services-ads-identifier:$google_play_services_version"
         implementation "com.google.android.gms:play-services-basement:$google_play_services_version"
     }
-
     if (mozconfig.substs.MOZ_ANDROID_GCM) {
         implementation "com.google.android.gms:play-services-basement:$google_play_services_version"
         implementation "com.google.android.gms:play-services-base:$google_play_services_version"
         implementation "com.google.android.gms:play-services-gcm:$google_play_services_version"
     }
-
     // Include LeakCanary in local builds, but not in official builds.  Mach
     // builds target the official audience, so LeakCanary will not be included
     // in any Mach build.
     localImplementation 'com.squareup.leakcanary:leakcanary-android:1.4-beta1'
     officialImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.4-beta1'
     testImplementation 'com.squareup.leakcanary:leakcanary-android-no-op:1.4-beta1'
-
     implementation project(path: ':geckoview')
     implementation project(path: ':thirdparty')
-
     testImplementation 'junit:junit:4.12'
     testImplementation 'org.robolectric:robolectric:3.8'
     testImplementation 'org.simpleframework:simple-http:6.0.1'
     testImplementation 'org.mockito:mockito-core:1.10.19'
-
     // Including the Robotium JAR directly can cause issues with dexing.
     androidTestImplementation 'com.jayway.android.robotium:robotium-solo:5.5.4'
-
     /*Cliqz Start*/
     //Library for control center donut - chart
     implementation 'com.github.PhilJay:MPAndroidChart:v3.0.2'

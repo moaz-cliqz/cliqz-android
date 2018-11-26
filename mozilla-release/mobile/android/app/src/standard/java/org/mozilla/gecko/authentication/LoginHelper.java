@@ -1,16 +1,18 @@
 package org.mozilla.gecko.authentication;
 
-import android.support.v7.app.AppCompatActivity;
+import android.content.Context;
 
 /**
  * Copyright © Cliqz 2018
+ *
+ * Dummy class for flavour abstraction
  */
 public class LoginHelper {
-    public LoginHelper(AppCompatActivity activity) {
 
+    public LoginHelper(Context context){
     }
 
-    public void  start() {
+    public void start(){
     }
 
     public boolean backPressed() {

@@ -5,15 +5,18 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 
 import org.mozilla.gecko.GeckoSharedPrefs;
-
-import static org.mozilla.gecko.myoffrz.MyOffrzUtils.isMyOffrzSupportedForLang;
+import org.mozilla.gecko.R;
 
 /**
  * Copyright © Cliqz 2018
  */
 public class PreferenceManager {
 
+    private static final String VPN_SELECTED_COUNTRY = "vpn.selected.country";
+    private static final String VPN_START_TIME = "vpn.start.time";
     private static final String PREF_EMAIL_ID = "preferences.email.id";
+    private static final String VPN_US_PASSWORD = "vpn.us.password";
+    private static final String VPN_DE_PASSWORD = "vpn.de.password";
 
     private final SharedPreferences mAppSharedPreferences;
     private static PreferenceManager preferenceManager = null;
@@ -56,9 +59,29 @@ public class PreferenceManager {
         editor.putBoolean(GeckoPreferences.PREFS_GHOSTERY_BLOCK_NEW_TRACKERS, value).apply();
     }
 
+    public void setVpnCountry(String country) {
+        final SharedPreferences.Editor editor = mAppSharedPreferences.edit();
+        editor.putString(VPN_SELECTED_COUNTRY, country).apply();
+    }
+
+    public void setVpnStartTime(long time) {
+        final SharedPreferences.Editor editor = mAppSharedPreferences.edit();
+        editor.putLong(VPN_START_TIME, time).apply();
+    }
+
     public void setEmailId(String emailId) {
         final SharedPreferences.Editor editor = mAppSharedPreferences.edit();
         editor.putString(PREF_EMAIL_ID, emailId).apply();
+    }
+
+    public void setVpnPasswordUs(String password) {
+        final SharedPreferences.Editor editor = mAppSharedPreferences.edit();
+        editor.putString(VPN_US_PASSWORD, password).apply();
+    }
+
+    public void setVpnPasswordDe(String password) {
+        final SharedPreferences.Editor editor = mAppSharedPreferences.edit();
+        editor.putString(VPN_DE_PASSWORD, password).apply();
     }
 
     public boolean isTelemetryEnabled() {
@@ -116,7 +139,24 @@ public class PreferenceManager {
         return  mAppSharedPreferences.getBoolean(GeckoPreferences.PREFS_CLIQZ_TAB_BACKGROUND_ENABLED,true);
     }
 
+    public String getVpnSelectedCountry() {
+        return mAppSharedPreferences.getString(VPN_SELECTED_COUNTRY, mContext.getString(R.string.country_germany));
+    }
+
+    public long getVpnStartTime() {
+        return mAppSharedPreferences.getLong(VPN_START_TIME, System.currentTimeMillis());
+	}
+
     public String getEmailId() {
         return mAppSharedPreferences.getString(PREF_EMAIL_ID, "");
     }
+
+    public String getVpnUsPassword() {
+        return mAppSharedPreferences.getString(VPN_US_PASSWORD, "");
+    }
+
+    public String getVpnDePassword() {
+        return mAppSharedPreferences.getString(VPN_DE_PASSWORD, "");
+    }
+
 }

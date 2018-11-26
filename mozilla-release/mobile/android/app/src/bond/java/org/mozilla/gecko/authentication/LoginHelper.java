@@ -6,6 +6,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Handler;
 import android.provider.Settings;
 import android.support.graphics.drawable.VectorDrawableCompat;
@@ -26,10 +27,13 @@ import com.google.protobuf.GeneratedMessageLite;
 import org.mozilla.gecko.Error;
 import org.mozilla.gecko.ErrorCode;
 import org.mozilla.gecko.IsDeviceActivatedResponse;
+import org.mozilla.gecko.OVPNResponse;
 import org.mozilla.gecko.R;
 import org.mozilla.gecko.Response;
 import org.mozilla.gecko.Utils;
 import org.mozilla.gecko.preferences.PreferenceManager;
+import org.mozilla.gecko.vpn.ConfigConverter;
+import org.mozilla.gecko.vpn.core.ProfileManager;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -62,6 +66,7 @@ public class LoginHelper implements View.OnClickListener, TalkToServer.ServerCal
     private Timer mTimer;
     private String mEmailId;
     private LoginStatus mLoginState = LoginStatus.REGISTRATION;
+    private enum LoginStatus {REGISTRATION, ACTIVATION, WELCOME}
 
     @SuppressLint("HardwareIds")
     public LoginHelper(AppCompatActivity activity) {
@@ -80,6 +85,7 @@ public class LoginHelper implements View.OnClickListener, TalkToServer.ServerCal
     }
 
     private boolean autoLogin() {
+        importVpnProfiles();
         mEmailId = mPreferenceManager.getEmailId();
         if (!mEmailId.isEmpty()) {
             checkDeviceActivated();
@@ -170,6 +176,7 @@ public class LoginHelper implements View.OnClickListener, TalkToServer.ServerCal
                         initViews();
                         showActivationScreen();
                     }
+                    getVpnCreds(mPreferenceManager.getEmailId());
                 }
                 break;
             case REGISTER_DEVICE:
@@ -212,6 +219,15 @@ public class LoginHelper implements View.OnClickListener, TalkToServer.ServerCal
                     mTimer.cancel();
                     mPreferenceManager.setEmailId(mEmailId);
                     showWelcomeScreen();
+                    getVpnCreds(mPreferenceManager.getEmailId());
+                }
+                break;
+            case GET_VPN_CREDS:
+                if (((OVPNResponse)serverResponse).getErrorCount() > 0) {
+                    Log.e(LOGTAG, "error getting vpn creds");
+                } else {
+                    mPreferenceManager.setVpnPasswordUs(((OVPNResponse)serverResponse).getConfigMap().get("us").getPassword());
+                    mPreferenceManager.setVpnPasswordDe(((OVPNResponse)serverResponse).getConfigMap().get("de").getPassword());
                 }
                 break;
         }
@@ -230,6 +246,10 @@ public class LoginHelper implements View.OnClickListener, TalkToServer.ServerCal
     private void resendActivation() {
         new TalkToServer(LoginHelper.this, TalkToServer.Cases.RESEND_ACTIVATION,
                 mEmailId, mSecretKey) .execute();
+	}
+
+    private void getVpnCreds(String emailId) {
+        new TalkToServer(this, TalkToServer.Cases.GET_VPN_CREDS, emailId, mSecretKey).execute();
     }
 
     private void pollServerForActivation() {
@@ -332,5 +352,17 @@ public class LoginHelper implements View.OnClickListener, TalkToServer.ServerCal
         return false;
     }
 
-    private enum LoginStatus {REGISTRATION, ACTIVATION, WELCOME}
+    private void importVpnProfiles() {
+        final ProfileManager profileManager = ProfileManager.getInstance(mActivity);
+        if (profileManager.getProfileByName("us-vpn") == null) {
+            final Uri usVpnUri = Uri.parse("android.resource://" + mActivity.getPackageName() + "/raw/us");
+            final ConfigConverter usConvertor = new ConfigConverter(mActivity);
+            usConvertor.startImportTask(usVpnUri, "us-vpn");
+		}
+		if (profileManager.getProfileByName("germany-vpn") == null) {
+            final Uri germanyVpnUri = Uri.parse("android.resource://" + mActivity.getPackageName() + "/raw/germany");
+            final ConfigConverter deConvertor = new ConfigConverter(mActivity);
+            deConvertor.startImportTask(germanyVpnUri, "germany-vpn");
+        }
+    }
 }

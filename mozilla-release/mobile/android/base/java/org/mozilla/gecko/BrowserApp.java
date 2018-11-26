@@ -267,7 +267,6 @@ public class BrowserApp extends GeckoApp
 
     private BrowserSearch mBrowserSearch;
     private View mBrowserSearchContainer;
-
     public ViewGroup mBrowserChrome;
     public ViewFlipper mActionBarFlipper;
     public ActionModeCompatView mActionBar;
@@ -3064,6 +3063,7 @@ public class BrowserApp extends GeckoApp
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         Log.d(LOGTAG, "onActivityResult: " + requestCode + ", " + resultCode + ", " + data);
+        //launchVPN.onActivityResult(requestCode, resultCode, data);
         switch (requestCode) {
             case ACTIVITY_REQUEST_PREFERENCES:
                 // We just returned from preferences. If our locale changed,
