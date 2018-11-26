@@ -2393,8 +2393,7 @@ public class BrowserApp extends GeckoApp
                         .show();
                 break;
             case "Privacy:DashboardData":
-                //here we have the data
-                Log.d(LOGTAG, message.toString());
+                mControlCenterPagerAdapter.setTrackingData(message);
                 break;
                 /* Cliqz end */
             default:
@@ -4608,9 +4607,7 @@ public class BrowserApp extends GeckoApp
             mControlCenterPager.setCurrentItem(0);
             //TODO: Move the event dispatches inside the respective control centers
             if (BuildConfig.FLAVOR_skin.equals("bond")) {
-                final GeckoBundle geckoBundle = new GeckoBundle();
-                geckoBundle.putString("interval", "day");
-                EventDispatcher.getInstance().dispatch("Privacy:GetInsightsData", geckoBundle);
+                EventDispatcher.getInstance().dispatch("Privacy:GetInsightsData", null);
             } else {
                 EventDispatcher.getInstance().dispatch("Privacy:GetInfo", null);
             }
@@ -4658,8 +4655,8 @@ public class BrowserApp extends GeckoApp
     }
 
     public void updateControlCenterIfNeeded() {
-        if (mControlCenterContainer.getVisibility() == View.VISIBLE) {
-            EventDispatcher.getInstance().dispatch("Privacy:GetInfo",null);
+        if (mControlCenterContainer.getVisibility() == View.VISIBLE && !BuildConfig.FLAVOR_skin.equals("bond")) {
+           EventDispatcher.getInstance().dispatch("Privacy:GetInfo",null);
         }
     }
 

@@ -13,6 +13,7 @@ import android.widget.TextView;
 
 import org.mozilla.gecko.R;
 import org.mozilla.gecko.util.GeckoBundle;
+import org.mozilla.gecko.util.GeckoBundleUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,7 +40,6 @@ public class DashboardTodayFragment extends ControlCenterFragment {
         mDashBoardListView.setAdapter(mDashboardAdapter);
         mDashBoardListView.setLayoutManager(new LinearLayoutManager(getContext()));
         changeDashboardState(true);//@todo real state, maybe from preference
-        addDummyData();
         return view;
     }
 
@@ -76,7 +76,7 @@ public class DashboardTodayFragment extends ControlCenterFragment {
         if (mDashboardAdapter == null) {
             return;
         }
-        mDashboardAdapter.setData(data);
+        updateViews(GeckoBundleUtils.safeGetBundle(data, "data/day"));
     }
 
     @Override
@@ -99,22 +99,28 @@ public class DashboardTodayFragment extends ControlCenterFragment {
     }
 
     // @Todo should be removed
-    public void addDummyData() {
+    public void updateViews(GeckoBundle data) {
+        if (data == null) {
+            return;
+        }
+        final MeasurementWrapper timeSaved = ValuesFormatterUtil.formatTime(data.getInt("timeSaved", 0));
+        final MeasurementWrapper dataSaved = ValuesFormatterUtil.formatBytesCount(data.getInt("dataSaved", 0));
+        final MeasurementWrapper adsBlocked = ValuesFormatterUtil.formatBlockCount(data.getInt("adsBlocked", 0));
+        final MeasurementWrapper trackersDetected = ValuesFormatterUtil.formatBlockCount(data.getInt("trackersDetected", 0));
         final List<DashboardItemEntity> dashboardItems = new ArrayList<>();
-        dashboardItems.add(new DashboardItemEntity("255","MIN",R.drawable.ic_time_circle,"Time Saved",
-                "That you can spend with your friends", -1));
-        dashboardItems.add(new DashboardItemEntity("4732","",R.drawable.ic_ad_blocking_shiel,
-                "Ads Blocked",
-                "That you can enjoy surfing without ads", -1));
-        dashboardItems.add(new DashboardItemEntity("251","MB",-1,"Data Saved","more that" +
-                "enough to watch another video", -1));
-        dashboardItems.add(new DashboardItemEntity("255","MIN",R.drawable.ic_battery,"Battery Saved",
+        dashboardItems.add(new DashboardItemEntity(timeSaved.getValue(), timeSaved.getUnit(),
+                R.drawable.ic_time_circle, "Time Saved", "That you can spend with your friends", -1));
+        dashboardItems.add(new DashboardItemEntity(adsBlocked.getValue(), adsBlocked.getUnit(),
+                R.drawable.ic_ad_blocking_shiel, "Ads Blocked", "That you can enjoy surfing without ads", -1));
+        dashboardItems.add(new DashboardItemEntity(dataSaved.getValue(), dataSaved.getUnit(), -1,
+                "Data Saved", "more that enough to watch another video", -1));
+        //@TODO decide how to calculate battery savd
+        dashboardItems.add(new DashboardItemEntity("255", "MIN", R.drawable.ic_battery, "Battery Saved",
                 "so that you can enjoy your phone a little longer", -1));
-        dashboardItems.add(new DashboardItemEntity("","",R.drawable.ic_anti_phishing_hook,"Phishing protection",
+        dashboardItems.add(new DashboardItemEntity("", "", R.drawable.ic_anti_phishing_hook, "Phishing protection",
                 "so that you can swim freely with our browser", -1));
-        mDashboardAdapter.addItems(dashboardItems);
-        dashboardItems.add(new DashboardItemEntity("4000","\n\tCOMPANIES",R.drawable
-                .ic_eye,"Tracker Companies blocked",
+        dashboardItems.add(new DashboardItemEntity(trackersDetected.getValue(), "\n\tCOMPANIES", R.drawable
+                .ic_eye, "Tracker Companies blocked",
                 "...companies with most trackers: Google, Amaozn, Facebook,...", -1));
         /* @todo unhide the money item
         dashboardItems.add(new DashboardItemEntity("261","EUR",-1,"Money saved",

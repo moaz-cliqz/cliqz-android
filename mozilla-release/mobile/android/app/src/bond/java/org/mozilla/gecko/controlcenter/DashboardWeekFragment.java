@@ -29,6 +29,10 @@ public class DashboardWeekFragment extends ControlCenterFragment {
 
     @Override
     public void updateUI(GeckoBundle data) {
+//        if (mDashboardAdapter == null) {
+//            return;
+//        }
+//        updateViews(GeckoBundleUtils.safeGetBundle(data, "data/week"));
     }
 
     @Override
@@ -39,4 +43,5 @@ public class DashboardWeekFragment extends ControlCenterFragment {
     public void refreshUIComponent(int id, boolean optionValue) {
 
     }
+
 }
