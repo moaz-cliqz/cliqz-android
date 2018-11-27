@@ -4,5 +4,5 @@
     <corners android:radius="40dp"></corners>
     <stroke
         android:width="2dp"
-        android:color="@color/login_input_text"></stroke>
+        android:color="@color/bond_general_color_blue"></stroke>
 </shape>

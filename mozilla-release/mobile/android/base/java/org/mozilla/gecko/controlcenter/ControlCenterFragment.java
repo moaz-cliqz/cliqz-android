@@ -10,7 +10,7 @@ import org.mozilla.gecko.util.GeckoBundle;
  */
 public abstract class ControlCenterFragment extends Fragment {
 
-    public abstract String getTitle(Context context);
+    public abstract String getTitle(Context context, int position);
 
     public abstract void updateUI(GeckoBundle data);
 

@@ -38,6 +38,11 @@ public class ThemedRelativeLayout extends android.widget.RelativeLayout
 
     private ColorStateList drawableColors;
 
+    /* Cliqz start */
+    private static final int[] BOND_WHITE_MODE = { R.attr.bond_white };
+    private boolean isBondWhite;
+    /* Cliqz end */
+
     public ThemedRelativeLayout(Context context, AttributeSet attrs) {
         super(context, attrs);
         initialize(context, attrs, 0);
@@ -87,6 +92,11 @@ public class ThemedRelativeLayout extends android.widget.RelativeLayout
             mergeDrawableStates(drawableState, STATE_LIGHT);
         else if (isDark)
             mergeDrawableStates(drawableState, STATE_DARK);
+
+        /* Cliqz start */
+        if(isBondWhite)
+            mergeDrawableStates(drawableState,BOND_WHITE_MODE);
+        /* Cliqz end */
 
         return drawableState;
     }
@@ -173,4 +183,14 @@ public class ThemedRelativeLayout extends android.widget.RelativeLayout
     protected LightweightTheme getTheme() {
         return theme;
     }
+
+    /* Cliqz start */
+    public void setBondWhite(boolean isBondWhite) {
+        if (this.isBondWhite != isBondWhite) {
+            this.isBondWhite = isBondWhite;
+            refreshDrawableState();
+            invalidate();
+        }
+    }
+    /* Cliqz end */
 }

@@ -17,9 +17,12 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.SeekBar;
-import android.widget.TextView;
+
 import org.mozilla.gecko.R;
 import org.mozilla.gecko.util.GeckoBundle;
+import org.mozilla.gecko.widget.themed.ThemedLinearLayout;
+import org.mozilla.gecko.widget.themed.ThemedTextView;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,6 +36,7 @@ public class DashboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     private enum ItemType {ONE_VIEW, TWO_VIEWS}
     private final int MIN_MONEY_BAR_VALUE = 5;
     public static final int AVERAGE_MONEY_BAR_VALUE = 5;
+    private boolean mIsBondWhite = false;
 
     public DashboardAdapter(Context context) {
         mContext = context;
@@ -75,6 +79,8 @@ public class DashboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
             final TwoItemsViewHolder viewHolder = (TwoItemsViewHolder) holder;
             setTwoItemsRowValues(viewHolder.leftItem, mDashboardItems.get(position));
             setTwoItemsRowValues(viewHolder.rightItem, mDashboardItems.get(position + 1));
+            viewHolder.leftItem.setBondWhite();
+            viewHolder.rightItem.setBondWhite();
         } else {
             final ItemViewHolder itemViewHolder = (ItemViewHolder) holder;
             // +1 because first 2 items is combined in 1 item
@@ -157,6 +163,7 @@ public class DashboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
                 itemViewHolder.itemMoneyBarValueView.setVisibility(View.VISIBLE);
             }
+            itemViewHolder.setBondWhite();
         }
     }
 
@@ -180,30 +187,53 @@ public class DashboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
         notifyDataSetChanged();
     }
 
+    public void setIsBondWhite(boolean isBondWhite) {
+        mIsBondWhite = isBondWhite;
+        notifyDataSetChanged();
+    }
     private class ItemViewHolder extends RecyclerView.ViewHolder {
+        public ThemedLinearLayout itemLayout;
         public ImageView itemIconView;
-        public TextView itemMeasurementView;
-        public TextView itemTitleView;
-        public TextView itemContentView;
+        public ThemedTextView itemMeasurementView;
+        public ThemedTextView itemTitleView;
+        public ThemedTextView itemContentView;
         public SeekBar itemMoneyBarView;
-        public TextView itemMoneyBarValueView;
+        public ThemedTextView itemMoneyBarValueView;
 
         public ItemViewHolder(View itemView) {
             super(itemView);
+            itemLayout = (ThemedLinearLayout) itemView.findViewById(R.id.dashboard_item_layout);
             itemIconView = (ImageView) itemView.findViewById(R.id.item_icon);
-            itemMeasurementView = (TextView) itemView.findViewById(R.id.item_measurement);
-            itemTitleView = (TextView) itemView.findViewById(R.id.item_title);
-            itemContentView = (TextView) itemView.findViewById(R.id.item_content);
+            itemMeasurementView = (ThemedTextView) itemView.findViewById(R.id.item_measurement);
+            itemTitleView = (ThemedTextView) itemView.findViewById(R.id.item_title);
+            itemContentView = (ThemedTextView) itemView.findViewById(R.id.item_content);
             itemMoneyBarView = (SeekBar) itemView.findViewById(R.id.item_money_bar);
-            itemMoneyBarValueView = (TextView) itemView.findViewById(R.id.item_money_bar_value);
+            itemMoneyBarValueView = (ThemedTextView) itemView.findViewById(R.id.item_money_bar_value);
+            setBondWhite();
+        }
+
+        public void setBondWhite() {
+            itemLayout.setBondWhite(mIsBondWhite);
+            itemMeasurementView.setBondWhite(mIsBondWhite);
+            itemTitleView.setBondWhite(mIsBondWhite);
+            itemContentView.setBondWhite(mIsBondWhite);
+            itemMoneyBarValueView.setBondWhite(mIsBondWhite);
         }
     }
 
     private class ItemStructure {
+        public ThemedLinearLayout itemLayout;
         public ImageView itemIconView;
-        public TextView itemMeasurementView;
-        public TextView itemTitleView;
-        public TextView itemContentView;
+        public ThemedTextView itemMeasurementView;
+        public ThemedTextView itemTitleView;
+        public ThemedTextView itemContentView;
+
+        public void setBondWhite() {
+            itemLayout.setBondWhite(mIsBondWhite);
+            itemMeasurementView.setBondWhite(mIsBondWhite);
+            itemTitleView.setBondWhite(mIsBondWhite);
+            itemContentView.setBondWhite(mIsBondWhite);
+        }
     }
 
     private class TwoItemsViewHolder extends RecyclerView.ViewHolder {
@@ -211,17 +241,21 @@ public class DashboardAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
         public TwoItemsViewHolder(View itemView) {
             super(itemView);
-            final View leftView = itemView.findViewById(R.id.left_item);
+            final ThemedLinearLayout leftView = (ThemedLinearLayout)itemView.findViewById(R.id.left_item);
             leftItem = findViews(leftView);
-            final View rightView = itemView.findViewById(R.id.right_item);
+            leftItem.itemLayout = leftView;
+            leftItem.setBondWhite();
+            final ThemedLinearLayout rightView =  (ThemedLinearLayout) itemView.findViewById(R.id.right_item);
             rightItem = findViews(rightView);
+            rightItem.itemLayout = rightView;
+            rightItem.setBondWhite();
         }
 
         private ItemStructure findViews(View view) {
             final ItemStructure item = new ItemStructure();
-            item.itemTitleView = (TextView) view.findViewById(R.id.item_title);
-            item.itemContentView = (TextView) view.findViewById(R.id.item_content);
-            item.itemMeasurementView = (TextView) view.findViewById(R.id.item_measurement);
+            item.itemTitleView = (ThemedTextView) view.findViewById(R.id.item_title);
+            item.itemContentView = (ThemedTextView) view.findViewById(R.id.item_content);
+            item.itemMeasurementView = (ThemedTextView) view.findViewById(R.id.item_measurement);
             item.itemIconView = (ImageView) view.findViewById(R.id.item_icon);
             return item;
         }

@@ -1639,7 +1639,7 @@ public final class HomeConfig {
     private static final String REMOTE_TABS_PANEL_ID = "72429afd-8d8b-43d8-9189-14b779c563d0";
     private static final String DEPRECATED_READING_LIST_PANEL_ID = "20f4549a-64ad-4c32-93e4-1dcef792733b";
     private static final String MY_OFFRZ_PANEL_ID = "4b3eded8-02ce-e304-9b54-6e5e21121633";
-    private static final String VPN_PANEL_ID = "bf8e4352-8468-4723-95b5-713f89606adf";
+    public static final String VPN_PANEL_ID = "bf8e4352-8468-4723-95b5-713f89606adf";
     /* Cliqz end */
 
     private final HomeConfigBackend mBackend;

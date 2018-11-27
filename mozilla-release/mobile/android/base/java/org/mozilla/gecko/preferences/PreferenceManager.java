@@ -7,6 +7,8 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import org.mozilla.gecko.GeckoSharedPrefs;
 import org.mozilla.gecko.R;
 
+import static org.mozilla.gecko.preferences.GeckoPreferences.PREFS_BOND_THEME;
+
 /**
  * Copyright © Cliqz 2018
  */
@@ -159,4 +161,7 @@ public class PreferenceManager {
         return mAppSharedPreferences.getString(VPN_DE_PASSWORD, "");
     }
 
+    public boolean getIsBondThemeWhite() {
+        return mAppSharedPreferences.getBoolean(PREFS_BOND_THEME,false);
+    }
 }

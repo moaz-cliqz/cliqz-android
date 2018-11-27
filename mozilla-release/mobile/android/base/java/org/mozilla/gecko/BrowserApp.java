@@ -196,7 +196,9 @@ import org.mozilla.gecko.widget.AnchoredPopup;
 import org.mozilla.gecko.widget.AnimatedProgressBar;
 import org.mozilla.gecko.widget.GeckoActionProvider;
 import org.mozilla.gecko.widget.SplashScreen;
+import org.mozilla.gecko.widget.themed.ThemedLinearLayout;
 import org.mozilla.gecko.widget.themed.ThemedTabLayout;
+import org.mozilla.gecko.widget.themed.ThemedTextView;
 import org.mozilla.geckoview.GeckoSession;
 
 import java.io.File;
@@ -213,6 +215,7 @@ import java.util.Locale;
 import java.util.regex.Pattern;
 
 import static org.mozilla.gecko.mma.MmaDelegate.NEW_TAB;
+import static org.mozilla.gecko.preferences.GeckoPreferences.PREFS_BOND_THEME;
 import static org.mozilla.gecko.util.JavaUtil.getBundleSizeInBytes;
 import static org.mozilla.gecko.util.ViewUtil.dpToPx;
 import static org.mozilla.gecko.util.ViewUtil.getVectorDrawable;
@@ -236,7 +239,7 @@ public class BrowserApp extends GeckoApp
                                    AntiPhishing.AntiPhishingCallback,
                                    AntiPhishingDialog.AntiPhishingDialogActionListener,
                                    /* Cliqz End */
-                                   OnboardingHelper.OnboardingListener {
+                                   OnboardingHelper.OnboardingListener, SharedPreferences.OnSharedPreferenceChangeListener {
     private static final String LOGTAG = "GeckoBrowserApp";
 
     private static final int TABS_ANIMATION_DURATION = 450;
@@ -311,10 +314,13 @@ public class BrowserApp extends GeckoApp
 
     // Minimum app launches until we show the dialog to set default browser.
     private static final int MINIMUM_UNTIL_DEFAULT_BROWSER_PROMPT = 3;
-    private TextView mStateButtonBondDashboard;
-    private TextView mVpnButtonBondDashboard;
-    private TextView mClearButtonBondDashboard;
+    private ThemedLinearLayout mDashboardControls;
+    private ThemedTextView mStateButtonBondDashboard;
+    private ThemedTextView mVpnButtonBondDashboard;
+    private ThemedTextView mClearButtonBondDashboard;
     public LoginHelper mLoginHelper;
+    private ThemedTabLayout mTabLayout;
+    private boolean mIsBondThemeChange = true;
     /* Cliqz End */
 
     public static final String TAB_HISTORY_FRAGMENT_TAG = "tabHistoryFragment";
@@ -861,12 +867,13 @@ public class BrowserApp extends GeckoApp
         mControlCenterPagerAdapter.init(this);
         mControlCenterPager.setAdapter(mControlCenterPagerAdapter);
         mControlCenterPager.setOffscreenPageLimit(3);
-        final ThemedTabLayout tabLayout = (ThemedTabLayout) findViewById(R.id.control_center_tab_layout);
-        tabLayout.setupWithViewPager(mControlCenterPager);
+        mTabLayout = (ThemedTabLayout) findViewById(R.id.control_center_tab_layout);
+        mTabLayout.setupWithViewPager(mControlCenterPager);
         mCliqzQuerySuggestionsContainer = (LinearLayout) findViewById(R.id.query_suggestions_container);
 
         if(BuildConfig.FLAVOR_skin.equals("bond")) {
             initBondControlButtons();
+            mPreferenceManager.registerOnSharedPreferenceChangeListener(this);
         }
         /*Cliqz end*/
 
@@ -4608,6 +4615,10 @@ public class BrowserApp extends GeckoApp
             //TODO: Move the event dispatches inside the respective control centers
             if (BuildConfig.FLAVOR_skin.equals("bond")) {
                 EventDispatcher.getInstance().dispatch("Privacy:GetInsightsData", null);
+                if (mIsBondThemeChange) {
+                    setBondWhite();
+                    mIsBondThemeChange = false;
+                }
             } else {
                 EventDispatcher.getInstance().dispatch("Privacy:GetInfo", null);
             }
@@ -4815,11 +4826,13 @@ public class BrowserApp extends GeckoApp
     public void initBondControlButtons() {
         final View bondDashboardControlsView = ((ViewStub) findViewById(R.id
                 .bond_dashboard_controls)).inflate();
-        mStateButtonBondDashboard = (TextView) bondDashboardControlsView.findViewById
+        mDashboardControls = (ThemedLinearLayout)  bondDashboardControlsView.findViewById
+                (R.id.bond_dashboard_controls);
+        mStateButtonBondDashboard = (ThemedTextView) bondDashboardControlsView.findViewById
                 (R.id.bond_dashboard_state_button);
-        mVpnButtonBondDashboard = (TextView) bondDashboardControlsView.findViewById(R.id
+        mVpnButtonBondDashboard = (ThemedTextView) bondDashboardControlsView.findViewById(R.id
                 .bond_dashboard_vpn_button);
-        mClearButtonBondDashboard = (TextView) bondDashboardControlsView.findViewById(R.id
+        mClearButtonBondDashboard = (ThemedTextView) bondDashboardControlsView.findViewById(R.id
                 .bond_dashboard_clear_button);
 
         mStateButtonBondDashboard.setTag(true); //@todo real state, maybe from preference
@@ -4838,6 +4851,7 @@ public class BrowserApp extends GeckoApp
             @Override
             public void onClick(View v) {
                 hideControlCenter();
+                showHomePager(HomeConfig.VPN_PANEL_ID,null);
             }
         });
 
@@ -4848,17 +4862,16 @@ public class BrowserApp extends GeckoApp
                         .bond_dashboard_clear_button,false);
             }
         });
-
     }
 
     public void bondDashboardStateChange(boolean isEnabled) {
         final int stateDrawbaleId;
         final int stateTextId;
         if(isEnabled) {
-            stateDrawbaleId = R.drawable.ic_bond_pause;
+            stateDrawbaleId = R.drawable.bond_pause;
             stateTextId = R.string.bond_dashboard_contols_pause;
         } else {
-            stateDrawbaleId = R.drawable.ic_bond_start;
+            stateDrawbaleId = R.drawable.bond_start;
             stateTextId = R.string.bond_dashboard_contols_start;
         }
         mStateButtonBondDashboard.setCompoundDrawablesWithIntrinsicBounds(null,getVectorDrawable
@@ -4867,5 +4880,22 @@ public class BrowserApp extends GeckoApp
         mControlCenterPagerAdapter.updateViewComponent(0,R.id.bond_dashboard_state_button,isEnabled);
     }
 
+    public void setBondWhite() {
+        final boolean isBondWhite = mPreferenceManager.getIsBondThemeWhite();
+        mStateButtonBondDashboard.setBondWhite(isBondWhite);
+        mVpnButtonBondDashboard.setBondWhite(isBondWhite);
+        mClearButtonBondDashboard.setBondWhite(isBondWhite);
+        mDashboardControls.setBondWhite(isBondWhite);
+        mTabLayout.setBondWhite(isBondWhite);
+        mControlCenterPagerAdapter.updateViewComponent(0,R.id.bond_dashboard_layout,isBondWhite);
+        mControlCenterPagerAdapter.updateViewComponent(1,R.id.bond_dashboard_layout,isBondWhite);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
+        if(key.equals(PREFS_BOND_THEME)) {
+            mIsBondThemeChange = true;
+        }
+    }
     /* Cliqz end */
 }

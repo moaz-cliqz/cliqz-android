@@ -34,7 +34,7 @@ public abstract class BaseControlCenterPagerAdapter extends FragmentPagerAdapter
     }
 
     public CharSequence getPageTitle(int position) {
-        return mFragmentList.get(position).getTitle(mContext);
+        return mFragmentList.get(position).getTitle(mContext,position);
     }
 
     public void setTrackingData(final GeckoBundle message) {

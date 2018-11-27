@@ -1111,7 +1111,7 @@
     <style name="bond_dashboard_controls_title">
         <item name="android:gravity">center</item>
         <item name="android:textSize">@dimen/bond_dashboard_controls_title_size</item>
-        <item name="android:textColor">@color/general_blue_color</item>
+        <item name="android:textColor">@color/bond_general_color_blue</item>
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:layout_weight">0.33</item>

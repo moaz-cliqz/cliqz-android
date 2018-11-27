@@ -158,7 +158,7 @@ public class OverviewFragment extends ControlCenterFragment implements View.OnCl
     }
 
     @Override
-    public String getTitle(Context context) {
+    public String getTitle(Context context, int position) {
         return context.getString(R.string.cc_title_overview);
     }
 

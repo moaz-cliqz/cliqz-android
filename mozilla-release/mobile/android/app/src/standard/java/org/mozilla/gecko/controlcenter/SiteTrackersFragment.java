@@ -59,7 +59,7 @@ public class SiteTrackersFragment extends ControlCenterFragment implements View.
     }
 
     @Override
-    public String getTitle(Context context) {
+    public String getTitle(Context context, int position) {
         return context.getString(R.string.cc_title_site_trackers);
     }
 

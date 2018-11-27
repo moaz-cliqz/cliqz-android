@@ -30,13 +30,17 @@ public class ThemedTextView extends android.widget.TextView
     protected static final int[] PRIVATE_PRESSED_STATE_SET = { R.attr.state_private, android.R.attr.state_pressed };
     protected static final int[] PRIVATE_FOCUSED_STATE_SET = { R.attr.state_private, android.R.attr.state_focused };
     protected static final int[] PRIVATE_STATE_SET = { R.attr.state_private };
-
     private boolean isPrivate;
     private boolean isLight;
     private boolean isDark;
     private boolean autoUpdateTheme;        // always false if there's no theme.
 
     private ColorStateList drawableColors;
+
+    /* Cliqz start */
+    private static final int[] BOND_WHITE_MODE = { R.attr.bond_white };
+    private boolean isBondWhite;
+    /* Cliqz end */
 
     public ThemedTextView(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -87,6 +91,11 @@ public class ThemedTextView extends android.widget.TextView
             mergeDrawableStates(drawableState, STATE_LIGHT);
         else if (isDark)
             mergeDrawableStates(drawableState, STATE_DARK);
+
+        /* Cliqz start */
+        if(isBondWhite)
+            mergeDrawableStates(drawableState,BOND_WHITE_MODE);
+        /* Cliqz end */
 
         return drawableState;
     }
@@ -173,4 +182,15 @@ public class ThemedTextView extends android.widget.TextView
     protected LightweightTheme getTheme() {
         return theme;
     }
+
+    /* Cliqz start */
+    public void setBondWhite(boolean isBondWhite) {
+        if (this.isBondWhite != isBondWhite) {
+            this.isBondWhite = isBondWhite;
+            refreshDrawableState();
+            drawableStateChanged();
+            invalidate();
+        }
+    }
+    /* Cliqz end */
 }

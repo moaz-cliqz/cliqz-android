@@ -14,6 +14,7 @@ import android.widget.TextView;
 import org.mozilla.gecko.R;
 import org.mozilla.gecko.util.GeckoBundle;
 import org.mozilla.gecko.util.GeckoBundleUtils;
+import org.mozilla.gecko.widget.themed.ThemedRelativeLayout;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,12 +26,15 @@ import static org.mozilla.gecko.controlcenter.ControlCenterPagerAdapter.IS_TODAY
  */
 public class DashboardFragment extends ControlCenterFragment {
 
+    private ThemedRelativeLayout mBondDashboardLayout;
     private RecyclerView mDashBoardListView;
     private TextView mDashboardStateTextView;
     private View mDisableDashboardView;
     private DashboardAdapter mDashboardAdapter;
     private boolean mIsDailyView;
-
+    private final int [] tabsTitleIds = {R.string.bond_dashboard_today_title,R.string
+            .bond_dashboard_week_title};
+    private boolean mIsBondWhite = false;
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -41,14 +45,17 @@ public class DashboardFragment extends ControlCenterFragment {
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        final View view = inflater.inflate(R.layout.bond_dashboard_today_fragment, container,
+        final View view = inflater.inflate(R.layout.bond_dashboard_fragment, container,
                 false);
+        mBondDashboardLayout = (ThemedRelativeLayout) view.findViewById(R.id.bond_dashboard_layout);
         mDashBoardListView = (RecyclerView) view.findViewById(R.id.dash_board_list_view);
         mDashboardStateTextView = (TextView) view.findViewById(R.id.dashboard_state_text);
         mDisableDashboardView = view.findViewById(R.id.dashboard_disable_view);
         mDashboardAdapter = new DashboardAdapter(getContext());
         mDashBoardListView.setAdapter(mDashboardAdapter);
         mDashBoardListView.setLayoutManager(new LinearLayoutManager(getContext()));
+        mBondDashboardLayout.setBondWhite(mIsBondWhite);
+        mDashboardAdapter.setIsBondWhite(mIsBondWhite);
         changeDashboardState(true);//@todo real state, maybe from preference
         return view;
     }
@@ -60,7 +67,7 @@ public class DashboardFragment extends ControlCenterFragment {
         if(isEnabled) {
             stateTextId = R.string.bond_dashboard_contols_on;
             overlayVisibility = View.GONE;
-            stateTextColorId = R.color.general_blue_color;
+            stateTextColorId = R.color.bond_general_color_blue;
         } else {
             stateTextId = R.string.bond_dashboard_contols_off;
             overlayVisibility = View.VISIBLE;
@@ -77,8 +84,8 @@ public class DashboardFragment extends ControlCenterFragment {
     }
 
     @Override
-    public String getTitle(Context context) {
-        return context.getString(R.string.bond_dashboard_today_title);
+    public String getTitle(Context context, int pos) {
+        return context.getString(tabsTitleIds[pos]);
     }
 
     @Override
@@ -109,6 +116,12 @@ public class DashboardFragment extends ControlCenterFragment {
             changeDashboardState(optionValue);
         } else if (id == R.id.bond_dashboard_clear_button) {
             mDashboardAdapter.resetData();
+        } else if(id == R.id.bond_dashboard_layout) {
+            mIsBondWhite = optionValue;
+            if(mBondDashboardLayout != null) {
+                mBondDashboardLayout.setBondWhite(mIsBondWhite);
+                mDashboardAdapter.setIsBondWhite(mIsBondWhite);
+            }
         }
     }
 

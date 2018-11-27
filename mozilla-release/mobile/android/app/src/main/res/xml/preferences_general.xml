@@ -146,7 +146,12 @@
     <Preference
         android:key="android.not_a_preference.show.hints"
         android:title="@string/pref_show_hints" />
-    <!-- Cliqz end -->
 
+    <!-- switching the theme in bond -->
+    <SwitchPreference
+        android:key="pref.bond.theme"
+        android:title="Bond white Theme"
+        android:defaultValue="false"/>
+    <!-- Cliqz end -->
 </PreferenceScreen>
 

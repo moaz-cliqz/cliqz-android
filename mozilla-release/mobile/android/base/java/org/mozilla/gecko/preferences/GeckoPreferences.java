@@ -260,6 +260,7 @@ public class GeckoPreferences
 
     public static final String PREFS_APP_LAUNCH_COUNT = "app_launch_count";
     public static final String PREFS_HELP_SUPPORT = NON_PREF_PREFIX + "help.support";
+    public static final String PREFS_BOND_THEME = "pref.bond.theme";
     /* Cliqz end */
 
     private final Map<String, PrefHandler> HANDLERS;
@@ -1063,6 +1064,10 @@ public class GeckoPreferences
                             return true;
                         }
                     });
+                } else if (PREFS_BOND_THEME.equals(key) && !BuildConfig.DEBUG) {
+                    preferences.removePreference(pref);
+                    i--;
+                    continue;
                 }
                 /* Cliqz end */
 

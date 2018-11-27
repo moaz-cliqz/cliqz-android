@@ -1,29 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Copyright © Cliqz 2018-->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<org.mozilla.gecko.widget.themed.ThemedLinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/bond_dashboard_controls"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@android:color/black"
+    android:background="@drawable/bond_background"
     android:orientation="horizontal"
     android:paddingTop="@dimen/padding_16"
     android:paddingBottom="@dimen/padding_16">
 
-    <TextView
+    <org.mozilla.gecko.widget.themed.ThemedTextView
         android:id="@+id/bond_dashboard_state_button"
         style="@style/bond_dashboard_controls_title"
-        android:drawableTop="@drawable/ic_bond_pause"
+        android:drawableTop="@drawable/bond_pause"
         android:text="@string/bond_dashboard_contols_pause" />
 
-    <TextView
+    <org.mozilla.gecko.widget.themed.ThemedTextView
         android:id="@+id/bond_dashboard_vpn_button"
         style="@style/bond_dashboard_controls_title"
-        android:drawableTop="@drawable/ic_bond_vpn_on"
+        android:drawableTop="@drawable/bond_vpn_on"
         android:text="@string/bond_dashboard_contols_vpn" />
 
-    <TextView
+    <org.mozilla.gecko.widget.themed.ThemedTextView
         android:id="@+id/bond_dashboard_clear_button"
         style="@style/bond_dashboard_controls_title"
-        android:drawableTop="@drawable/ic_bond_clear"
+        android:drawableTop="@drawable/bond_clear"
         android:text="@string/bond_dashboard_contols_clear" />
 
-</LinearLayout>
+</org.mozilla.gecko.widget.themed.ThemedLinearLayout>

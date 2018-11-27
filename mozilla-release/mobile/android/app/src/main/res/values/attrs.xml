@@ -194,5 +194,10 @@
         <attr name="showLWTBackground" format="boolean"/>
     </declare-styleable>
 
+    <!-- Cliqz start -->
+    <declare-styleable name="BondWhite">
+        <attr name="bond_white" format="boolean"/>
+    </declare-styleable>
+    <!-- Cliqz end -->
 </resources>
 
